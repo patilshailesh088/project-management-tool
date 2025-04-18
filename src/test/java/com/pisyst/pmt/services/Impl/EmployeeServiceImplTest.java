@@ -1,6 +1,8 @@
 package com.pisyst.pmt.services.Impl;
 
+import com.pisyst.pmt.KafkaDetails.KafkaProducerService;
 import com.pisyst.pmt.entities.Employee;
+import com.pisyst.pmt.repositories.EmployeeDocumentRepository;
 import com.pisyst.pmt.repositories.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,15 @@ public class EmployeeServiceImplTest {
     @Mock //Mock the repository that the service depends on,@Mock tells Mockito to create a fake EmployeeRepository
     private EmployeeRepository employeeRepository;
 
+    @Mock
+    private EmployeeDocumentRepository employeeDocumentRepository;
+
+    @Mock
+    private S3Service s3Service;
+
+    @Mock
+    private KafkaProducerService kafkaProducerService;
+
     @InjectMocks//Inject the mock into the service we're testing, @InjectMocks tells Mockito to create EmployeeServiceImpl and inject the fake employeeRepository into it.
     private EmployeeServiceImpl employeeServiceImpl;
 
@@ -40,7 +51,7 @@ public class EmployeeServiceImplTest {
         Employee result = employeeServiceImpl.getEmployeeByEmpId(id);
 
         assertNotNull(result);
-        assertEquals(id, result.getId());
+        assertEquals(1L, result.getId());
         assertEquals("John", result.getFirstName());
     }
 
