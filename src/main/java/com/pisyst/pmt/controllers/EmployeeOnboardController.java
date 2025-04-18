@@ -1,24 +1,16 @@
 package com.pisyst.pmt.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pisyst.pmt.dtos.EmployeeDTO;
 import com.pisyst.pmt.entities.Employee;
 import com.pisyst.pmt.services.Impl.EmployeeServiceImpl;
-import jakarta.servlet.annotation.MultipartConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import java.util.List;
 
@@ -51,9 +43,12 @@ public class EmployeeOnboardController {
         return ResponseEntity.ok(employee);
     }
 
-    @GetMapping("/getAllEmployees")
-    public ResponseEntity<List<Employee>> employeeById() {
-        List<Employee> employees = employeeService.getAllEmployees();
+    @GetMapping("/getEmployeesWithPagination")
+    public ResponseEntity<Page<Employee>> getAllEmployeesWithPagination(@RequestParam (defaultValue = "0") int page,
+                                                                        @RequestParam (defaultValue = "10") int size,
+                                                                        @RequestParam (defaultValue = "desc") String sortBy) {
+       org.springframework.data.domain.Page<Employee> employees = employeeService.getAllEmployeesWithPagination(page, size, sortBy);
+
         return ResponseEntity.ok(employees);
     }
 

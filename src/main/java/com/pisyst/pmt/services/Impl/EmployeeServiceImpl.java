@@ -10,6 +10,10 @@ import com.pisyst.pmt.repositories.EmployeeRepository;
 import com.pisyst.pmt.services.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -91,8 +95,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+    public Page<Employee> getAllEmployeesWithPagination(int page, int size, String sortBy) {
+
+        Sort sort = sortBy.equalsIgnoreCase("desc")
+                    ? Sort.by("createdDate").descending() :
+                      Sort.by("createdDate").ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return employeeRepository.findAll(pageable);
     }
 
     @Override
