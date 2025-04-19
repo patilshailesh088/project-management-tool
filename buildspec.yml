@@ -14,7 +14,10 @@ phases:
   build:
     commands:
       - echo Building the project with Maven...
+      - export JAVA_HOME=/usr/lib/jvm/jdk-21  # Ensure JAVA_HOME is set correctly in build phase
+      - export PATH=$JAVA_HOME/bin:$PATH       # Ensure PATH includes the correct Java version
       - export MAVEN_OPTS="-Djava.home=$JAVA_HOME"  # Ensure Maven uses Java 21
+      - java -version  # Verify Java version is correct
       - mvn clean install  # This will generate the .jar file in the target directory
       - echo Building the Docker image...
       - docker build -t project-management-tool .  # Ensure Docker uses the correct tag
