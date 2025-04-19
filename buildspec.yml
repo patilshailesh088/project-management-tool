@@ -2,26 +2,37 @@ version: 0.2
 
 phases:
   install:
+    runtime-versions:
+      java: corretto21
+      docker: 20
     commands:
-      - echo Docker is already installed, skipping installation.
+      - echo Installing Maven...
+      - curl -sSL https://apache.osuosl.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip -o maven.zip
+      - unzip -q maven.zip
+      - export M2_HOME=$PWD/apache-maven-3.9.6
+      - export PATH=$M2_HOME/bin:$PATH
+      - export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto
+      - echo "Java Home: $JAVA_HOME"
+      - java -version
+      - mvn -version
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436949122.dkr.ecr.ap-south-1.amazonaws.com  # Use new login method
+      - $(aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436949122.dkr.ecr.ap-south-1.amazonaws.com)
+      - REPOSITORY_URI=886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo Cleaning and packaging application with Java 21...
+      - mvn clean package -DskipTests -Dmaven.compiler.release=21 --no-transfer-progress
   build:
     commands:
       - echo Building the Docker image...
-      - docker build -t project-management-tool .  # Build Docker image with tag
-      - docker tag project-management-tool:latest 886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool:latest  # Tag the image with ECR repository URL
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
   post_build:
     commands:
-      - echo Pushing Docker image to ECR...
-      - docker push 886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool:latest  # Push the Docker image to ECR
-
+      - echo Pushing the Docker image to ECR...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing imagedefinitions.json...
+      - printf '[{"name":"project-management-tool","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 artifacts:
   files:
-    - '**/*'  # Define the files to be included in the build artifacts
-  discard-paths: yes  # Discard paths from the artifact
-
-cache:
-  paths: []  # Remove Maven cache since it's not being used
+    - imagedefinitions.json
