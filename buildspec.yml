@@ -4,7 +4,7 @@ phases:
   pre_build:
     commands:
       - echo Installing Java 21...
-      - curl -sSL https://download.java.net/java/ga/jdk21/9/GPL/openjdk-21_linux-x64_bin.tar.gz | tar -xz -C /usr/lib/jvm/
+      - curl -sSL https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz | tar -xz -C /usr/lib/jvm/
       - export JAVA_HOME=/usr/lib/jvm/jdk-21
       - export PATH=$JAVA_HOME/bin:$PATH
       - java -version  # Verify Java 21 installation
