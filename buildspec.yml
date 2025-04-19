@@ -37,7 +37,7 @@ phases:
       - echo Updating ECS service with new image...
       - |
         ECS_SERVICE_ARN=$(aws ecs describe-services --cluster project-management-tool-cluster --services project-management-tool-service --query 'services[0].serviceArn' --output text --region ap-south-1)
-        if [ "$ECS_SERVICE_ARN" == "None" ]; then
+        if [ "$ECS_SERVICE_ARN" = "None" ]; then
           echo "Service does not exist. Creating ECS service..."
           aws ecs create-service \
             --cluster project-management-tool-cluster \
