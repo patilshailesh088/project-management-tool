@@ -7,6 +7,8 @@ phases:
       - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436949122.dkr.ecr.ap-south-1.amazonaws.com
   build:
     commands:
+      - echo Building the project with Maven...
+      - mvn clean install  # This will generate the .jar file in the target directory
       - echo Building the Docker image...
       - docker build -t project-management-tool .
       - docker tag project-management-tool:latest 886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool
