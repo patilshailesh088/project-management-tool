@@ -7,8 +7,7 @@ phases:
       - echo "Installing Docker..."
       - sudo yum update -y
       - sudo yum install -y docker
-      - sudo service docker start
-      - sudo usermod -a -G docker $USER
+      - sudo systemctl start docker  # Use systemctl to start Docker
       - sudo systemctl enable docker
       - docker --version
 
