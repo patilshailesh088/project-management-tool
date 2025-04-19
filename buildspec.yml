@@ -3,45 +3,24 @@ version: 0.2
 phases:
   install:
     commands:
-      # Installing Docker
-      - echo "Installing Docker..."
-      - sudo yum update -y
+      - echo Installing Docker...
       - sudo yum install -y docker
-      - sudo systemctl start docker  # Use systemctl to start Docker
-      - sudo systemctl enable docker
-      - docker --version
-
-      # Installing Java 21 manually
-      - echo Installing Java 21...
-      - mkdir -p /usr/lib/jvm
-      - curl -sSL https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz | tar -xz -C /usr/lib/jvm/
-      - export JAVA_HOME=/usr/lib/jvm/jdk-21
-      - export PATH=$JAVA_HOME/bin:$PATH
-      - echo "JAVA_HOME is $JAVA_HOME"
-      - java -version
-
+      - curl -fsSL https://get.docker.com | sh
+      - sudo service docker start
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436949122.dkr.ecr.ap-south-1.amazonaws.com
-
+      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
   build:
     commands:
-      - echo Building the project with Maven using Java 21...
-      - export JAVA_HOME=/usr/lib/jvm/jdk-21
-      - export PATH=$JAVA_HOME/bin:$PATH
-      - export MAVEN_OPTS="--release 21"
-      - java -version
-      - mvn -version
-      - mvn clean install
       - echo Building the Docker image...
-      - docker build -t project-management-tool .
-      - docker tag project-management-tool:latest 886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool
-
+      - docker build -t $ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION .
+      - docker tag $ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION
   post_build:
     commands:
-      - echo Pushing the Docker image to ECR...
-      - docker push 886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool
+      - echo Pushing the Docker image...
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION
 
 artifacts:
   files: '**/*'
+  discard-paths: yes
