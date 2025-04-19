@@ -15,24 +15,30 @@ phases:
       - echo "Java Home: $JAVA_HOME"
       - java -version
       - mvn -version
+
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436949122.dkr.ecr.ap-south-1.amazonaws.com)
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436949122.dkr.ecr.ap-south-1.amazonaws.com
       - echo "Setting environment variables..."
-      - REPOSITORY_URI="886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool"
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - echo "Packaging with Maven and Java 21..."
+      - echo 'REPOSITORY_URI=886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool' >> env.properties
+      - echo "IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)" >> env.properties
+      - source env.properties
+      - echo "Packaging with Maven..."
       - mvn clean package -DskipTests -Dmaven.compiler.release=21 --no-transfer-progress
+
   build:
     commands:
-      - echo Building Docker image...
+      - source env.properties
+      - echo "Building Docker image $REPOSITORY_URI:$IMAGE_TAG..."
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+
   post_build:
     commands:
-      - echo Pushing image to ECR...
+      - source env.properties
+      - echo "Pushing Docker image to ECR..."
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Writing imagedefinitions.json...
+      - echo "Writing imagedefinitions.json..."
       - printf '[{"name":"project-management-tool","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
