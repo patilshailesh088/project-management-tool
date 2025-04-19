@@ -14,9 +14,10 @@ phases:
   build:
     commands:
       - echo Building the project with Maven...
+      - export MAVEN_OPTS="-Djava.home=$JAVA_HOME"  # Ensure Maven uses Java 21
       - mvn clean install  # This will generate the .jar file in the target directory
       - echo Building the Docker image...
-      - docker build -t project-management-tool .
+      - docker build -t project-management-tool .  # Ensure Docker uses the correct tag
       - docker tag project-management-tool:latest 886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool
 
   post_build:
