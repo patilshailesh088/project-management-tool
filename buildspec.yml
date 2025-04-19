@@ -36,7 +36,20 @@ phases:
       - printf '[{"name":"project-management-tool","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - echo Checking if ECS service exists...
       - SERVICE_EXISTS=$(aws ecs describe-services --cluster project-management-tool-cluster --services project-management-tool-service --query 'services[0].serviceName' --output text --region ap-south-1)
-      - if [ "$SERVICE_EXISTS" == "project-management-tool-service" ]; then echo "Service exists, skipping creation"; else echo "Creating ECS service..."; aws ecs create-service --cluster project-management-tool-cluster --service-name project-management-tool-service --task-definition project-management-tool-task:1 --desired-count 1 --launch-type FARGATE --network-configuration "awsvpcConfiguration={subnets=[subnet-xxxxxxxx],securityGroups=[sg-xxxxxxxx],assignPublicIp=ENABLED}" --region ap-south-1; fi
+      - |
+        if [ "$SERVICE_EXISTS" == "project-management-tool-service" ]; then
+          echo "Service exists, skipping creation"
+        else
+          echo "Creating ECS service..."
+          aws ecs create-service \
+            --cluster project-management-tool-cluster \
+            --service-name project-management-tool-service \
+            --task-definition project-management-tool-task:1 \
+            --desired-count 1 \
+            --launch-type FARGATE \
+            --network-configuration "{\"awsvpcConfiguration\":{\"subnets\":[\"subnet-01167b9d1ce4b8684\"],\"securityGroups\":[\"sg-036ff208c85057bd3\"],\"assignPublicIp\":\"ENABLED\"}}" \
+            --region ap-south-1
+        fi
       - echo Updating ECS service with new image...
       - aws ecs update-service --cluster project-management-tool-cluster --service project-management-tool-service --force-new-deployment --region ap-south-1
 
