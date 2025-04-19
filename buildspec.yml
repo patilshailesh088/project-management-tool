@@ -3,24 +3,27 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo Installing Docker...
-      - sudo yum install -y docker
-      - curl -fsSL https://get.docker.com | sh
-      - sudo service docker start
+      - echo Docker is already installed, skipping installation.
+      - sudo service docker start  # Ensure Docker service is running
+      - sudo usermod -aG docker ec2-user  # Add ec2-user to the docker group if not already added
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436949122.dkr.ecr.ap-south-1.amazonaws.com  # Use new login method
   build:
     commands:
       - echo Building the Docker image...
-      - docker build -t $ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION .
-      - docker tag $ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - docker build -t project-management-tool .  # Build Docker image with tag
+      - docker tag project-management-tool:latest 886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool:latest  # Tag the image with ECR repository URL
   post_build:
     commands:
-      - echo Pushing the Docker image...
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - echo Pushing Docker image to ECR...
+      - docker push 886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool:latest  # Push the Docker image to ECR
 
 artifacts:
-  files: '**/*'
-  discard-paths: yes
+  files:
+    - '**/*'  # Define the files to be included in the build artifacts
+  discard-paths: yes  # Discard paths from the artifact
+
+cache:
+  paths: []  # Remove Maven cache since it's not being used
