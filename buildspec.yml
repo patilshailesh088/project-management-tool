@@ -4,7 +4,6 @@ phases:
   install:
     commands:
       - echo Docker is already installed, skipping installation.
-      - sudo usermod -aG docker ec2-user  # Add ec2-user to the docker group if not already added
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
