@@ -10,8 +10,13 @@ phases:
       - curl -sSL https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz | tar -xz -C /usr/lib/jvm/
       - export JAVA_HOME=/usr/lib/jvm/jdk-21
       - export PATH=$JAVA_HOME/bin:$PATH
-      - echo "JAVA_HOME is $JAVA_HOME"
       - java -version
+
+      - echo Installing Maven...
+      - curl -sSL https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz | tar -xz -C /opt
+      - export M2_HOME=/opt/apache-maven-3.9.6
+      - export PATH=$M2_HOME/bin:$PATH
+      - mvn -version
 
   pre_build:
     commands:
@@ -23,6 +28,8 @@ phases:
       - echo Building the project with Maven using Java 21...
       - export JAVA_HOME=/usr/lib/jvm/jdk-21
       - export PATH=$JAVA_HOME/bin:$PATH
+      - export M2_HOME=/opt/apache-maven-3.9.6
+      - export PATH=$M2_HOME/bin:$PATH
       - export MAVEN_OPTS="--release 21"
       - java -version
       - mvn -version
