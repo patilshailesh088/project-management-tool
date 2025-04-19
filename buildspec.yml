@@ -3,8 +3,14 @@ version: 0.2
 phases:
   pre_build:
     commands:
+      - echo Installing Java 21...
+      - curl -sSL https://download.java.net/java/ga/jdk21/9/GPL/openjdk-21_linux-x64_bin.tar.gz | tar -xz -C /usr/lib/jvm/
+      - export JAVA_HOME=/usr/lib/jvm/jdk-21
+      - export PATH=$JAVA_HOME/bin:$PATH
+      - java -version  # Verify Java 21 installation
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436949122.dkr.ecr.ap-south-1.amazonaws.com
+
   build:
     commands:
       - echo Building the project with Maven...
@@ -12,6 +18,7 @@ phases:
       - echo Building the Docker image...
       - docker build -t project-management-tool .
       - docker tag project-management-tool:latest 886436949122.dkr.ecr.ap-south-1.amazonaws.com/project-management-tool
+
   post_build:
     commands:
       - echo Pushing the Docker image to ECR...
